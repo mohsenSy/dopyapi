@@ -9,7 +9,7 @@ Right now we only provide the ability to install using this repository,
 we will publish this package to Python Package Index soon.
 
 ```bash
-pip3 install https://github.com/mohsenSy/dopyapi.git
+pip3 install git+git://github.com/mohsenSy/dopyapi.git
 ```
 
 ## Obtain Access Token

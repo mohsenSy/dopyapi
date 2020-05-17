@@ -19,5 +19,9 @@ setuptools.setup(
         "License :: OSI Approved :: GNU General Public License v3.0",
         "Operating System :: OS Independent",
     ],
+    install_requires = [
+        'requests',
+        'requests-oauthlib'
+    ]
     python_requires='>=3.6',
 )
