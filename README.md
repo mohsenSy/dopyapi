@@ -69,6 +69,6 @@ found [here]()
 ## Contributing
 The library is currently in testing phase and any contributions are highly
 valuable now, you can create issues [here](https://github.com/mohsenSy/dopyapi/issues/new),
-read and check the docs [here]().
+read and check the docs [here](https://dopyapi.readthedocs.io/en/latest/).
 
-Also you can read about the internals of the library [here]()
+Also you can read about the internals of the library [here](https://mohsensy.github.io/sysadmin/2020/05/17/python-library-to-access-digital-ocean-api.html)
