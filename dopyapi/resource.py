@@ -138,7 +138,7 @@ class Resource:
             raise ClientError(f"This resource {self.resource} does not support updating")
         params = self.__get_dynamic_attrs()
         if url is None:
-            url = self.resource._url
+            url = self._url
         self.put(f"{url}/{self.__dict__[self.resource._update_attr]}", params)
     @classmethod
     def __fetch_data(cls, page=1, per_page=20, url=None, **kwargs):
@@ -212,7 +212,7 @@ class Resource:
             changed = object.__getattribute__(self, self.__dict__['__changed'])
         if changed is None:
             return None
-        res = self.get(f"{self.resource._url}/{changed}")
+        res = self.get(f"{self._url}/{changed}")
         self.__fetch_time = datetime.datetime.now()
         self.__dict__["__fetched"] = True
         self._update(res)
@@ -311,6 +311,7 @@ class Resource:
             dict: A dictionary of key/value pairs for the object's attributes.
         """
         ret = {}
+        self.__fetch(self._id_attr)
         for attr in self.resource._fetch_attrs:
             ret[attr] = object.__getattribute__(self, attr)
         for attr in self.resource._static_attrs:
@@ -468,9 +469,9 @@ class Resource:
         if r.status_code == 400 or r.status_code == 422 or r.status_code == 409 or r.status_code == 429:
             raise ClientError(r.json()["message"])
         if r.status_code == 403:
-            raise ClientForbiddenError()
+            raise ClientForbiddenError(r.json()["message"])
         if r.status_code == 404:
-            raise ResourceNotFoundError()
+            raise ResourceNotFoundError(r.json()["message"])
 
     def __post(self, url, data, **kwargs):
         """
@@ -498,7 +499,6 @@ class Resource:
         }
         auth = OAuth2(token=token)
         url = f"{self.auth.base_url}/{url}"
-        print("json = ", data)
         return requests.post(url, auth=auth, json=data, params=kwargs)
     def put(self, url, data, **kwargs):
         """

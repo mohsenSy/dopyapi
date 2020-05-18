@@ -64,7 +64,7 @@ To create a new droplet use this code::
     "name": "droplet1",
     "image": do.images.ubuntu,
     "size": do.sizes.tiny,
-    "region"; "ams3"
+    "region": "ams3"
   }
   droplet.create(**droplet_data)
   print(droplet.getPublicIP())

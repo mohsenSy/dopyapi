@@ -37,7 +37,7 @@ def _create_object(name, data):
         from .firewalls import OutboundRule
         for index in range(len(data)):
             data[index] = OutboundRule(data[index]["protocol"], data[index]["ports"], data[index]["destinations"])
-    if (name.endswith("_at") or name == "start" or name == "end") and data is not None:
+    if (name.endswith("_at") or name == "start" or name == "end" or name == "not_after") and data is not None:
         import datetime
         index = data.find(".")
         if index != -1:

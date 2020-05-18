@@ -38,6 +38,18 @@ CDNs
 .. automodule:: dopyapi.cdns
   :members:
 
+Certificates
+------------
+
+.. automodule:: dopyapi.certificates
+  :members:
+
+Domains and Domain Records
+---------------------------
+
+.. automodule:: dopyapi.domains
+  :members:
+
 
 common
 -------

@@ -17,3 +17,6 @@ from .common import DOJSONEncoder
 from .bills import Balance, BillingHistory
 from .loadbalancers import LoadBalancer, ForwardingRule, StickySession, HealthCheck
 from .vpcs import VPC
+from .cdns import CDN
+from .certificates import Certificate
+from .domains import Domain, DomainRecord
