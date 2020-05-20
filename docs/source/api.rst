@@ -44,6 +44,12 @@ Certificates
 .. automodule:: dopyapi.certificates
   :members:
 
+Container Registry
+------------------
+
+.. automodule:: dopyapi.registry
+  :members:
+
 Domains and Domain Records
 ---------------------------
 

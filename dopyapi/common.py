@@ -47,6 +47,9 @@ def _create_object(name, data):
         import datetime
         data["start"] = datetime.datetime.strptime(data["start"], "%Y-%m-%dT%H:%M:%SZ")
         data["end"] = datetime.datetime.strptime(data["end"], "%Y-%m-%dT%H:%M:%SZ")
+    if name == "latest_tag":
+        from .registry import RepositoryTag
+        return RepositoryTag(data["registry_name"], data["repository"], data)
     return data
 
 class DOJSONEncoder(JSONEncoder):
