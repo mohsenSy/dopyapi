@@ -87,6 +87,12 @@ images
 .. automodule:: dopyapi.images
   :members:
 
+invoices
+------------
+
+.. automodule:: dopyapi.invoices
+  :members:
+
 load balancers
 --------------
 

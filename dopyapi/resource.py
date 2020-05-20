@@ -1,6 +1,7 @@
 import requests
 import datetime
 import logging
+import simplejson
 from requests_oauthlib import OAuth2
 
 from .auth import Auth
@@ -412,7 +413,10 @@ class Resource:
         """
         r = self.__get(url, **kwargs)
         if r.status_code == 200:
-            return r.json()
+            try:
+                return r.json()
+            except simplejson.errors.JSONDecodeError:
+                return r.content
         if r.status_code == 500:
             raise DOError(r.json()["message"])
         if r.status_code == 400 or r.status_code == 422:
