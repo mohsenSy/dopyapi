@@ -329,3 +329,255 @@ selected automatically by Digital Ocean for us, we can specify our own
 IP range with adding ``ip_range`` key to the request, however we must
 make sure that the range is unique within our account and also
 must not be smaller than ``/24`` or larger that ``/16``.
+
+Create domains and domain records
+----------------------------------
+
+To create a new domain use this code::
+
+  domain_data = {
+    "name": "domain.tld",
+    "ip_address": "192.168.12.29"
+  }
+  domain = do.Domain()
+  domain.create(**domain_data)
+  print(domain)
+
+As usual, you can list domains with this code::
+
+  domains = do.Domain.list()
+    for domain in domains:
+        print(domain)
+
+Each domain consists of domain records, these are represented as instances
+of class :class:`~dopyapi.domains.DomainRecord`.
+
+To get the records of a domain use this code::
+
+  domain_records = do.DomainRecord.list("example.dev")
+    for record in domain_records:
+        print(record.json())
+
+Or you can use the domain's object directly to list its records
+as follows::
+
+  domain = do.Domain()
+  domain.name = "example.dev"
+  records = domain.records()
+  for record in records:
+    print(record.json())
+
+You can create a new domain record of type `A` using this code::
+
+  domain_record = do.DomainRecord("example.dev")
+  record_data = {
+    "type": "A",
+    "name": "test",
+    "data": "178.12.212.4"
+  }
+  domain_record.create(**record_data)
+  print(domain_record)
+
+To delete a domain or domain record just use `delete` method
+on their objects as usual.
+
+Create and list database clusters
+----------------------------------
+
+This library helps you to work with managed databases in Digital Ocean, we will
+show you here how to create and manage database clusters in Digital Ocean.
+
+To create a new database cluster use this code::
+
+  db_data = {
+    "engine": "mysql",
+    "name": "db-mysql1",
+    "size": do.sizes.db_tiny,
+    "region": "ams3",
+    "num_nodes": 1
+  }
+  db = do.DatabaseCluster()
+  db.create(**db_data)
+  print(db)
+
+When creating a new database cluster we need to select the following:
+
+* The engine of cluster: This defines the cluster's type, there are 3 available
+  types: "pg" for PostgreSQL, "mysql" for MySQL and "redis" for Redis.
+
+* The name of the cluster, we need to select a unique name for it.
+
+* The size of cluster: this defines the size of resources reserved for the
+  cluster, you can find available sizes in :mod:`~dopyapi.sizes` module.
+
+* The region for the cluster, this defines where the cluster's resources will be created.
+
+* The number of nodes: Here we select a number of instances for the database cluster.
+
+You can list database clusters as usual with this code::
+
+  dbs = do.DatabaseCluster.list()
+  for db in dbs:
+    print(db.json())
+
+Add firewall rules to database clusters
+----------------------------------------
+Every database cluster has a set of inbound rules that restricts all soucres
+from connecting to the cluster except for the specified ones.
+
+The sources can be one of:
+
+* A droplet: Here the type is called `droplet` and the value is the droplet's ID.
+* An IP address: Here the type is called `ip_addr` and the value is the IP address
+  in CIDR format.
+* A kubernetes cluster: Here the type is `k8s` and the value is the ID of
+  Digital Ocean kubernetes cluster.
+* A tag: Here the type is `tag` and the value is the name of tag, all
+  droplets and kubernetes clusters tagged with this tag are automatically
+  allowed in the database cluster.
+
+
+To create a firewall rule for the database cluster and assign it to the
+cluster use this code, here we assume that `db` is an instance of :class:`~dopyapi.databases.DatabaseCluster`::
+
+  dbf1 = do.DatabaseFirewall("ip_addr", "178.12.45.4")
+  dbf2 = do.DatabaseFirewall("tag", "db-allowed")
+  db.updateFirewall([dbf1, dbf2])
+
+In this code we first create two instances of :class:`~dopyapi.databases.DatabaseFirewall`
+to be used in creating the rules, then we use the :meth:`~dopyapi.databases.DatabaseCluster.updateFirewall`
+method to apply the firewalls to the cluster.
+
+To list the firewall rules and make sure they are applied use this code::
+
+  fws = db.listFirewall()
+  for fw in fws:
+    print(fw)
+
+Configure maintenance window
+-----------------------------
+Each database cluster has  a window for maintenance where cluster upgrades
+might happen, to you can get and set this window with the following code::
+
+  db.setMaintenanceWindow("friday", "00:00:00")
+  db.load()
+  print(db.maintenance_window)
+
+The method :meth:`~dopyapi.databases.DatabaseCluster.setMaintenanceWindow` is used
+to configure the maintenance window for the database, here we used the :meth:`~dopyapi.resource.Resource.load`
+method to update the values for the object and then print the new maintenance window object.
+
+Manage Users and Databases
+---------------------------
+The following code shows how to list, create, reset authentication and delete users::
+
+  dbs = do.DatabaseCluster.list()
+  db = dbs[0]
+  x = db.addUser("mohsen")
+  print(x)
+
+To retrieve an existing user use this code::
+
+  user = db.getUser("mohsen")
+
+To change the user authentication mechanism use this code::
+
+  x = db.resetAuth("mohsen", "mysql_native_password")
+  print(x)
+
+Listing all database users can be done with this code::
+
+  users = db.listUsers()
+  for user in users:
+    print(user.json())
+
+Deleting a user can be done as follows::
+
+  x = db.deleteUser("mohsen")
+  print(x)
+
+Managing databases can be done with similar code as shown bellow::
+
+  dbs = db.listDBS()
+  for d in dbs:
+      print(d)
+  db.addDB("telegram")
+  database = db.getDB("telegram")
+  print(database)
+  db.deleteDB("telegram")
+
+First we list all databases with :meth:`~dopyapi.databases.DatabaseCluster.listDBS` method,
+we then add a new database using :meth:`~dopyapi.databases.DatabaseCluster.addDB` method,
+and get the newly created database using :meth:`~dopyapi.databases.DatabaseCluster.getDB`
+method and finally use :meth:`~dopyapi.databases.DatabaseCluster.deleteDB` method to delete
+a database.
+
+Manage Connection pools for PostgreSQL database cluster
+-------------------------------------------------------
+
+Use this code to create a connection pool for a PostgreSQL database cluster::
+
+  pool_data = {
+    "name": "con-pool1",
+    "db": "defaultdb",
+    "user": "doadmin",
+    "mode": "transaction",
+    "size": 10
+  }
+  pool = do.DatabaseConnectionPool(**pool_data)
+  db.addPool(pool=pool)
+  # db.addPool(**pool_data)
+
+Each pool needs these attributes:
+
+* name: A unique name for the pool.
+* db: The database for use with the connection pool.
+* user: The name of the user for use with the connection pool.
+* mode: The PGBouncer pool mode for the connection pool. The allowed values are session, transaction, and statement.
+* size: The size of the PGBouncer connection pool. The total available size for all pools
+  depends on cluster node count and size, the lowest cluster size allows for 25 connections
+  2 are reserved for control purposes which leaves 23 for the user.
+
+
+We can create a new instance of :class:`~dopyapi.databases.DatabaseConnectionPool`
+class to create the pool or just pass pool attributes to :meth:`~dopyapi.databases.DatabaseCluster.addPool` method
+to create the pool.
+
+Listing pools and retrieving single pools and deleting them can be done as follows::
+
+  pools = db.listPools()
+  for pool in pools:
+    print(pool.json())
+  pool = db.getPool("con-pool1")
+  db.deletePool("con-pool1")
+
+Manage SQL Mode for MySQL cluster
+---------------------------------
+
+For MySQL clusters we can manage the used SQL mode as follows:
+
+  mode = db.getSqlMode()
+  print(mode)
+  db.setSqlMode("ANSI")
+  mode = db.getSqlMode()
+  print(mode)
+  db.setSqlMode()
+  mode = db.getSqlMode()
+  print(mode)
+
+We use the method :meth:`~dopyapi.databases.DatabaseCluster.getSqlMode`
+to retrieve the current SQL mode, and the method :meth:`~dopyapi.databases.DatabaseCluster.setSqlMode`
+can be used to change it, if no parameters are passed then the mode is reset to default value.
+
+Manage Eviction policy for Redis clusters
+-----------------------------------------
+
+You can get and set the eviction policy using this code::
+
+  policy = db.getEvPolicy()
+  print(policy)
+  db.setEvPolicy("allkeys_lru")
+  policy = db.getEvPolicy()
+  print(policy)
+
+Allowed values for eviction policy are ``noeviction``, ``allkeys_lru``, ``allkeys_random``, ``volatile_lru``, ``volatile_random`` and ``volatile_ttl``.

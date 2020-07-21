@@ -8,6 +8,11 @@ resource
 .. automodule:: dopyapi.resource
   :members:
 
+1-Click Applications
+--------------------
+.. automodule:: dopyapi.clickapps
+  :members:
+
 account
 -------
 
@@ -49,6 +54,13 @@ Container Registry
 
 .. automodule:: dopyapi.registry
   :members:
+
+Databases
+------------------
+
+.. automodule:: dopyapi.databases
+  :members:
+
 
 Domains and Domain Records
 ---------------------------

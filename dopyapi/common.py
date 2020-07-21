@@ -25,6 +25,8 @@ def _create_object(name, data):
         return Image(data)
     if name == "size":
         from .sizes import Size
+        if isinstance(data, str):
+            return data
         return Size(data)
     if name == "droplet":
         from .droplets import Droplet

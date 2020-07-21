@@ -469,8 +469,8 @@ class Resource:
         if r.status_code == 201 or r.status_code == 202:
             return r.json()
         if r.status_code == 500:
-            raise DOError()
-        if r.status_code == 400 or r.status_code == 422 or r.status_code == 409 or r.status_code == 429:
+            raise DOError(r.json()["message"])
+        if r.status_code == 400 or r.status_code == 422 or r.status_code == 409 or r.status_code == 429 or r.status_code == 412:
             raise ClientError(r.json()["message"])
         if r.status_code == 403:
             raise ClientForbiddenError(r.json()["message"])
@@ -511,7 +511,8 @@ class Resource:
         Args:
             url (str): The URL used when sending the request to the API
         Return:
-            dict : The dictionary response from the API if status code is 204.
+            dict : The dictionary response from the API if status code is 204,
+                if the status code is 202 it is {"status": "success"}
         raises:
             DOError : This is raised when the status code is 500
             ClientError : This is raised when the status code is 400 or 422.
@@ -521,9 +522,14 @@ class Resource:
         self.__get_json(data)
         r = self.__put(url, data, **kwargs)
         if r.status_code == 204:
-            return r.json()
+            try:
+                return r.json()
+            except simplejson.errors.JSONDecodeError:
+                return {"status": "success"}
+        if r.status_code == 202:
+            return {"status": "success"}
         if r.status_code == 500:
-            raise DOError()
+            raise DOError(r.json()["message"])
         if r.status_code == 400 or r.status_code == 422:
             raise ClientError(r.json()["message"])
         if r.status_code == 403:
@@ -582,7 +588,7 @@ class Resource:
             return {"status": "deleted"}
         if r.status_code == 500:
             raise DOError()
-        if r.status_code == 400 or r.status_code == 422:
+        if r.status_code == 400 or r.status_code == 422 or r.status_code == 412:
             raise ClientError(r.json()["message"])
         if r.status_code == 403:
             raise ClientForbiddenError()

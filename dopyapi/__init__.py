@@ -22,3 +22,5 @@ from .certificates import Certificate
 from .domains import Domain, DomainRecord
 from .registry import Registry, Repository, RepositoryTag
 from .invoices import Invoice, InvoiceItem, InvoiceSummary
+from .databases import DatabaseCluster, DatabaseFirewall, DatabaseConnectionPool
+from .clickapps import ClickApp

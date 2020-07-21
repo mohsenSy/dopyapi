@@ -105,6 +105,64 @@ large="s-6vcpu-16gb"
 A large size, 6vCPU, 16 GB RAM
 """
 
+db_1_1 = "db-s-1vcpu-1gb"
+"""
+Database size: 1 vCPU 1 GB RAM, 10 GB HD
+"""
+db_1_2 = "db-s-1vcpu-2gb"
+"""
+Database size: 1 vCPU 2 GB RAM, 25 GB HD
+"""
+db_2_4 = "db-s-2vcpu-4gb"
+"""
+Database size: 2 vCPU 4 GB RAM, 38 GB HD
+"""
+db_4_8 = "db-s-4vcpu-8gb"
+"""
+Database size: 4 vCPU 8 GB RAM, 115 GB HD
+"""
+db_6_16 = "db-s-6vcpu-16gb"
+"""
+Database size: 6 vCPU 16 GB RAM, 270 GB HD
+"""
+db_8_32 = "db-s-8vcpu-32gb"
+"""
+Database size: 8 vCPU 32 GB RAM, 580 GB HD
+"""
+db_16_64 = "db-s-16vcpu-64gb"
+"""
+Database size: 16 vCPU 64 GB RAM, 1.12 TB HD
+"""
+
+db_tiny = db_1_1
+"""
+Tiny database size : 1 vCPU 1 GB RAM, 10 GB HD
+"""
+db_small = db_1_2
+"""
+Small database size : 1 vCPU 2 GB RAM, 25 GB HD
+"""
+db_medium = db_2_4
+"""
+Medium database size : 2 vCPU 4 GB RAM, 38 GB HD
+"""
+db_large = db_4_8
+"""
+Large database size : 4 vCPU 8 GB RAM, 115 GB HD
+"""
+db_xlarge = db_6_16
+"""
+X large database size : 6 vCPU 16 GB RAM, 270 GB HD
+"""
+db_xxlarge = db_8_32
+"""
+XX large database size : 8 vCPU 32 GB RAM, 580 GB HD
+"""
+db_xxxlarge = db_16_64
+"""
+XXX large database size : 16 vCPU 64 GB RAM, 1.12 TB HD
+"""
+
 class Size(Resource):
     """
     This class represents sizes in DO which are used when creating droplets.

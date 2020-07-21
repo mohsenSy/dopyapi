@@ -110,6 +110,23 @@ class Domain(Resource):
         if ip_address is not None:
             domain_data["ip_address"] = ip_address
         return super().create(**domain_data)
+    def records(self, page=1, per_page=20):
+        """
+        Return a list of :class:`~dopyapi.domains.DomainRecord` for this domain.
+
+        Arguments:
+            page (int): The page to fetch from all domain records (defaults 1)
+            per_page (int): The number of domain records per a single page (defaults 20)
+
+        Returns:
+            list: A list of domain records
+        raises:
+            DOError : This is raised when the status code is 500
+            ClientError : This is raised when the status code is 400 or 422
+            ClientForbiddenError : This is raised when the status code is 403
+            ResourceNotFoundError : This is raised when the status code is 404
+        """
+        return DomainRecord.list(self.name)
 
 from .resource import Resource, ClientError
 
@@ -271,8 +288,6 @@ class DomainRecord(Resource):
         """
         if type not in self._record_types.keys():
             raise ClientError(f"{type} record is not supported")
-        print(set(self._record_types[type]))
-        print(set(kwargs.keys()))
         if not set(self._record_types[type]) <= set(kwargs.keys()):
             raise ClientError(f"For {type} records you need {self._record_types[type]}")
         return super().create(type=type, **kwargs)
