@@ -7,100 +7,100 @@ these slugs when creating a new droplet.
 """
 from .resource import Resource
 
-t_0_1="512mb"
+t_0_1 = "512mb"
 """
 1 vCPU, 512 MB RAM
 """
-s_1_1="s-1vcpu-1gb"
+s_1_1 = "s-1vcpu-1gb"
 """
 1 vCPU, 1 GB RAM
 """
-t_1_1="1gb"
+t_1_1 = "1gb"
 """
 1 vCPU, 1 GB RAM
 """
-s_1_2="s-1vcpu-2gb"
+s_1_2 = "s-1vcpu-2gb"
 """
 1 vCPU, 2 GB RAM
 """
-s_1_3="s-1vcpu-3gb"
+s_1_3 = "s-1vcpu-3gb"
 """
 1 vCPU, 3 GB RAM
 """
-s_2_2="s-2vcpu-2gb"
+s_2_2 = "s-2vcpu-2gb"
 """
 2 vCPU, 2 GB RAM
 """
-s_3_1="s-3vcpu-1gb"
+s_3_1 = "s-3vcpu-1gb"
 """
 3 vCPU, 1 GB RAM
 """
-t_2_2="2gb"
+t_2_2 = "2gb"
 """
 2 vCPU, 2 GB RAM
 """
-s_2_4="s-2vcpu-4gb"
+s_2_4 = "s-2vcpu-4gb"
 """
 2 vCPU, 4 GB RAM
 """
-t_2_4="4gb"
+t_2_4 = "4gb"
 """
 2 vCPU, 4 GB RAM
 """
-s_4_8="s-4vcpu-8gb"
+s_4_8 = "s-4vcpu-8gb"
 """
 4 vCPU, 8 GB RAM
 """
-m_1_8="m-1vcpu-8gb"
+m_1_8 = "m-1vcpu-8gb"
 """
 1 vCPU, 8 GB RAM
 """
-c_2_4="c-2"
+c_2_4 = "c-2"
 """
 2 vCPU, 4 GB RAM
 """
-g_2_8="g-2vcpu-8gb"
+g_2_8 = "g-2vcpu-8gb"
 """
 2 vCPU, 8 GB RAM
 """
-gd_2_8="gd-2vcpu-8gb"
+gd_2_8 = "gd-2vcpu-8gb"
 """
 2 vCPU, 8 GB RAM
 """
-m_2_16="m-16gb"
+m_2_16 = "m-16gb"
 """
 2 vCPU, 16 GB RAM
 """
-s_6_16="s-6vcpu-16gb"
+s_6_16 = "s-6vcpu-16gb"
 """
 6 vCPU, 16 GB RAM
 """
-c_4_8="c-4"
+c_4_8 = "c-4"
 """
 4 vCPU, 8 GB RAM
 """
-t_4_8="8gb"
+t_4_8 = "8gb"
 """
 4 vCPU, 8 GB RAM
 """
 
-tiny="s-1vcpu-1gb"
+tiny = "s-1vcpu-1gb"
 """
 A tiny size, 1vCPU, 1 GB RAM
 """
-small="s-1vcpu-3gb"
+small = "s-1vcpu-3gb"
 """
 A small size, 1vCPU, 3 GB RAM
 """
-medium="s-2vcpu-4gb"
+medium = "s-2vcpu-4gb"
 """
 A medium size, 2vCPU, 4 GB RAM
 """
-big="s-4vcpu-8gb"
+big = "s-4vcpu-8gb"
 """
 A big size, 4vCPU, 8 GB RAM
 """
-large="s-6vcpu-16gb"
+large = "s-6vcpu-16gb"
 """
 A large size, 6vCPU, 16 GB RAM
 """
@@ -163,6 +163,7 @@ db_xxxlarge = db_16_64
 XXX large database size : 16 vCPU 64 GB RAM, 1.12 TB HD
 """
 
+
 class Size(Resource):
     """
     This class represents sizes in DO which are used when creating droplets.
@@ -180,8 +181,8 @@ class Size(Resource):
         vcpus (int): The Virtual CPUs available for this size.
         disk (int): The amount of disk space available for this size.
         regions (list): A list containing the region slugs where this size is available for Droplet creates.
-
     """
+
     _url = "sizes"
     """
     The API endpoint for sizes.
@@ -202,7 +203,8 @@ class Size(Resource):
     """
     The attribute that can be changed on sizes.
     """
-    _static_attrs = ["slug", "available", "transfer", "price_monthly", "price_hourly", "regions", "memory", "vcpus", "disk"]
+    _static_attrs = ["slug", "available", "transfer", "price_monthly",
+                     "price_hourly", "regions", "memory", "vcpus", "disk"]
     """
     Size attributes that cannot be changed.
     """
@@ -226,12 +228,15 @@ class Size(Resource):
     """
     The name of attribute used as an ID for sizes.
     """
+
     def __init__(self, data=None):
         super().__init__(Size)
         if data is not None:
             self._update({self._single: data})
+
     def __repr__(self):
         return f"<Size slug: {self.slug}>"
+
     @classmethod
     def list(cls, **kwargs):
         """

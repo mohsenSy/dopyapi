@@ -24,3 +24,4 @@ from .registry import Registry, Repository, RepositoryTag
 from .invoices import Invoice, InvoiceItem, InvoiceSummary
 from .databases import DatabaseCluster, DatabaseFirewall, DatabaseConnectionPool
 from .clickapps import ClickApp
+from .doks import DOKS, NodePool

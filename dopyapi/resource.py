@@ -7,6 +7,7 @@ from requests_oauthlib import OAuth2
 from .auth import Auth
 from .common import _create_object
 
+
 class Resource:
     """
     The base class for all managed Digital Ocean resources
@@ -48,6 +49,7 @@ class Resource:
             _resource_type: The type of resource as a string
     """
     ttl = 10
+
     def __init__(self, resource):
         self.resource = resource
         self.__dict__["__changed"] = ""
@@ -78,6 +80,7 @@ class Resource:
         if attr in static_attrs:
             return
         self.__dict__[attr] = value
+
     def __getattribute__(self, attr):
         """
         This magic method is called every time we try to get the value of an attribute.
@@ -97,13 +100,15 @@ class Resource:
         if attr in static_attrs or attr in dynamic_attrs or attr in fetch_attrs:
             return self.__fetch(attr)
         if attr in action_attrs:
-            return lambda **kwargs : self.action(type=attr, **kwargs)
+            return lambda **kwargs: self.action(type=attr, **kwargs)
         return object.__getattribute__(self, attr)
+
     def getID(self):
         """
         Return the ID value for the instance.
         """
         return self.__getattribute__(self.__getattribute__("_id_attr"))
+
     def __get_dynamic_attrs(self):
         """
         Return a list of dynamic attribute values
@@ -115,6 +120,7 @@ class Resource:
         for attr in self.resource._dynamic_attrs:
             params[attr] = self.__dict__[attr]
         return params
+
     def save(self, url=None):
         """
         Update the instance with all values for dynamic attributes
@@ -136,11 +142,13 @@ class Resource:
 
         """
         if self.resource._update_attr == "":
-            raise ClientError(f"This resource {self.resource} does not support updating")
+            raise ClientError(
+                f"This resource {self.resource} does not support updating")
         params = self.__get_dynamic_attrs()
         if url is None:
             url = self._url
         self.put(f"{url}/{self.__dict__[self.resource._update_attr]}", params)
+
     @classmethod
     def __fetch_data(cls, page=1, per_page=20, url=None, **kwargs):
         """
@@ -162,8 +170,9 @@ class Resource:
             ResourceNotFoundError : This is raised when the status code is 404
         """
         resource = Resource(cls)
-        res = resource.get(url, page = page, per_page=per_page, **kwargs)
+        res = resource.get(url, page=page, per_page=per_page, **kwargs)
         return res[kwargs.get("index", cls._plural)]
+
     def __fetch(self, attr):
         """
         Try to fetch from DO API
@@ -184,6 +193,7 @@ class Resource:
             if self.__dict__["__fetched"] == False:
                 return self.__do_fetch(attr)
         return self.__dict__[attr]
+
     def load(self):
         """
         This method is used to force loading the attributes from the API.
@@ -192,6 +202,7 @@ class Resource:
             The value for ID attribute.
         """
         return self.__do_fetch(self._id_attr)
+
     def __do_fetch(self, attr):
         """
         This function starts a fetch from the API
@@ -218,6 +229,7 @@ class Resource:
         self.__dict__["__fetched"] = True
         self._update(res)
         return self.__dict__[attr]
+
     def _update(self, resource, index=None):
         """
         Here we update instance attributes based on data found in resource dictionary.
@@ -236,6 +248,7 @@ class Resource:
             if k in self.resource._dynamic_attrs or k in self.resource._static_attrs or k in self.resource._fetch_attrs:
                 self.__dict__[k] = _create_object(k, v)
         self.__dict__["__fetched"] = True
+
     @classmethod
     def list(cls, *args, **kwargs):
         """
@@ -277,7 +290,8 @@ class Resource:
             ResourceNotFoundError : This is raised when the status code is 404
         """
         if len(self._action_attrs) == 0:
-            raise ClientError(f"Cannot list actions for this resource {self.__class__.__name__}")
+            raise ClientError(
+                f"Cannot list actions for this resource {self.__class__.__name__}")
         from .actions import Action
         id_attr = self.resource.__dict__["_id_attr"]
         return Action.list(url=f"{self._url}/{self.__dict__[id_attr]}/actions", index="actions", **kwargs)
@@ -298,12 +312,15 @@ class Resource:
             ResourceNotFoundError : This is raised when the status code is 404
         """
         if len(self._action_attrs) == 0:
-            raise ClientError(f"Cannot get actions for this resource {self.__class__.__name__}")
+            raise ClientError(
+                f"Cannot get actions for this resource {self.__class__.__name__}")
         from .actions import Action
         action = Action()
-        ac = action.get(url=f"{self._url}/{self.__dict__[self._fetch_attrs[0]]}/actions/{action_id}")
+        ac = action.get(
+            url=f"{self._url}/{self.__dict__[self._fetch_attrs[0]]}/actions/{action_id}")
         action._update(ac)
         return action
+
     def json(self):
         """
         Return a dictionary of all Digital Ocean attributes for the resource
@@ -383,14 +400,15 @@ class Resource:
             use objects instead of IDs.
         """
         from .loadbalancers import StickySession, HealthCheck
-        for (k,v) in data.items():
+        from .doks import NodePool
+        for (k, v) in data.items():
             if isinstance(v, Resource):
                 data[k] = v.getID()
             elif isinstance(v, list):
                 for i in range(len(v)):
                     from .firewalls import InboundRule, OutboundRule, Location
                     from .loadbalancers import ForwardingRule
-                    if isinstance(v[i], (InboundRule, OutboundRule, Location, ForwardingRule, StickySession, HealthCheck)):
+                    if isinstance(v[i], (InboundRule, OutboundRule, Location, ForwardingRule, StickySession, HealthCheck, NodePool)):
                         v[i] = v[i].getJSON()
                     if isinstance(v[i], Resource):
                         v[i] = v[i].getID()
@@ -450,6 +468,7 @@ class Resource:
         auth = OAuth2(token=token)
         url = f"{self.auth.base_url}/{url}"
         return requests.get(url, auth=auth, params=kwargs)
+
     def post(self, url, data, **kwargs):
         """
         Send a POST request to Digital Ocean API
@@ -504,6 +523,7 @@ class Resource:
         auth = OAuth2(token=token)
         url = f"{self.auth.base_url}/{url}"
         return requests.post(url, auth=auth, json=data, params=kwargs)
+
     def put(self, url, data, **kwargs):
         """
         Send a PUT request to Digital Ocean API
@@ -536,6 +556,7 @@ class Resource:
             raise ClientForbiddenError()
         if r.status_code == 404:
             raise ResourceNotFoundError()
+
     def __put(self, url, data, **kwargs):
         """
             Make PUT request to the API using the URL and data with kwargs in query string
@@ -563,6 +584,7 @@ class Resource:
         auth = OAuth2(token=token)
         url = f"{self.auth.base_url}/{url}"
         return requests.put(url, auth=auth, json=data, params=kwargs)
+
     def delete(self, **kwargs):
         """
         Send a DELETE request to Digital Ocean API
@@ -579,7 +601,8 @@ class Resource:
             ClientForbiddenError : This is raised when the status code is 403
         """
         if len(kwargs) == 0:
-            r = self.__delete(f"{self._url}/{self.__dict__[self._delete_attr]}")
+            r = self.__delete(
+                f"{self._url}/{self.__dict__[self._delete_attr]}")
         else:
             url = kwargs.get("url", self._url)
             del kwargs["url"]
@@ -592,6 +615,7 @@ class Resource:
             raise ClientError(r.json()["message"])
         if r.status_code == 403:
             raise ClientForbiddenError()
+
     def __delete(self, url, **kwargs):
         """
             Make DELETE request to the API using the URL with kwargs in query string
@@ -622,6 +646,7 @@ class Resource:
             del kwargs["data"]
             self.__get_json(data)
             return requests.delete(url, auth=auth, json=data, params=kwargs)
+
     def head(self, url, **kwargs):
         token = {
             "access_token": self.auth.token,
@@ -630,20 +655,24 @@ class Resource:
         auth = OAuth2(token=token)
         return requests.head(url, auth=auth, params=kwargs)
 
+
 class ResourceNotFoundError(BaseException):
     """
     This exception is raised when we try to access a URL that does not exist.
     """
+
 
 class ClientForbiddenError(BaseException):
     """
     This exception is raised when the client is forbidden from accessing Digital Ocean.
     """
 
+
 class DOError(BaseException):
     """
     This exception is raised when an error happens in Digital Ocean side.
     """
+
 
 class ClientError(BaseException):
     """

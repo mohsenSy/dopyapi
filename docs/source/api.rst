@@ -105,6 +105,12 @@ invoices
 .. automodule:: dopyapi.invoices
   :members:
 
+Kuberenetes Cluster
+-------------------
+
+.. automodule:: dopyapi.doks
+  :members:
+
 load balancers
 --------------
 

@@ -4,6 +4,7 @@ from .common import _create_object
 from .regions import Region
 from .sizes import Size
 
+
 class DatabaseConnection:
     """
     This class holds connection information for the database cluster.
@@ -19,6 +20,7 @@ class DatabaseConnection:
         password (str): The randomly generated password for the default user.
         ssl (bool): A boolean value indicating if the connection should be made over SSL.
     """
+
     def __init__(self, connection):
         self.__connection = connection
         self.uri = connection["uri"]
@@ -31,10 +33,13 @@ class DatabaseConnection:
 
     def __getitem__(self, index):
         return self.__connection[index]
+
     def __repr__(self):
         return f"<Connection database: {self.database}, user: {self.user}>"
+
     def json(self):
         return self.__connection
+
 
 class DatabaseUser:
     """
@@ -51,6 +56,7 @@ class DatabaseUser:
 
     auth_plugin (str): A string specifying the authentication method in use for connections to the MySQL user account. The valid values are "mysql_native_password" or "caching_sha2_password".
     """
+
     def __init__(self, data):
         self.user = data
         self.name = data["name"]
@@ -60,12 +66,16 @@ class DatabaseUser:
             pass
         self.password = data["password"]
         self.role = data["role"]
+
     def __repr__(self):
         return f"<DatabaseUser name: {self.name}, role: {self.role}>"
+
     def __getitem__(self, index):
         return self.user[index]
+
     def json(self):
         return self.user
+
 
 class DatabaseFirewall:
     """
@@ -79,16 +89,20 @@ class DatabaseFirewall:
         type (str): The type of resource that the firewall rule allows to access the database cluster. The possible values are: 'droplet', 'k8s', 'ip_addr', or 'tag'
         value (str): The ID of the specific resource, the name of a tag applied to a group of resources, or the IP address that the firewall rule allows to access the database cluster.
     """
+
     def __init__(self, type, value):
         if not type in ["ip_addr", "droplet", "k8s", "tag"]:
-            raise ClientError("Supported types are 'ip_addr', 'droplet', 'k8s', 'tag'")
+            raise ClientError(
+                "Supported types are 'ip_addr', 'droplet', 'k8s', 'tag'")
         self.type = type
         self.value = value
+
     def json(self):
         return {
             "type": self.type,
             "value": self.value
         }
+
 
 class DatabaseBackup:
     """
@@ -98,16 +112,20 @@ class DatabaseBackup:
         size_gigabytes (float): The size of the database backup in GBs.
         created_at (datetime.datetime): A time value given in ISO8601 combined date and time format at which the backup was created.
     """
+
     def __init__(self, created_at, size_gigabytes):
         self.created_at = _create_object("created_at", created_at)
         self.size_gigabytes = size_gigabytes
+
     def __str__(self):
         return f"<DatabaseBackup size: {self.size_gigabytes} GB, created at: {self.created_at}>"
+
     def json(self):
         return {
             "size_gigabytes": self.size_gigabytes,
             "created_at": self.created_at
         }
+
 
 class DatabaseConnectionPool:
     """
@@ -124,9 +142,11 @@ class DatabaseConnectionPool:
         connection (:class:`~dopyapi.databases.DatabaseConnection`): An object containing the information required to access the database using the connection pool.
         private_connection (:class:`~dopyapi.databases.DatabaseConnection`): An object containing the information required to connect to the database using the connection pool via the private network.
     """
+
     def __init__(self, name, mode, size, db, user, connection=None, private_connection=None):
         if mode not in ["session", "transaction", "statement"]:
-            raise ClientError("Only 'session', 'transaction' and 'statement' modes are supported")
+            raise ClientError(
+                "Only 'session', 'transaction' and 'statement' modes are supported")
         self.name = name
         self.mode = mode
         self.size = size
@@ -140,8 +160,10 @@ class DatabaseConnectionPool:
             self.private_connection = DatabaseConnection(private_connection)
         else:
             self.private_connection = {}
+
     def __repr__(self):
         return f"<ConnectionPool name: {self.name}, mode: {self.mode}, size: {self.size}>"
+
     def json(self):
         return {
             "name": self.name,
@@ -222,13 +244,15 @@ class DatabaseCluster(Resource):
     """
     _fetch_attrs = ["id"]
     """
-    These attributes can be used to fetch a droplet by their value
+    These attributes can be used to fetch a database by their value
     """
-    _static_attrs = ["connection", "private_connection", "users", "db_names", "status", "maintenance_window", "created_at"]
+    _static_attrs = ["connection", "private_connection", "users",
+                     "db_names", "status", "maintenance_window", "created_at"]
     """
     These attributes are set by Digital Ocean for a database and cannot be changed directly
     """
-    _dynamic_attrs = ["name", "engine", "version", "size", "region", "num_nodes", "tags", "private_network_uuid"]
+    _dynamic_attrs = ["name", "engine", "version", "size",
+                      "region", "num_nodes", "tags", "private_network_uuid"]
     """
     These attributes can be used when creating a new database or updating an existing one
     """
@@ -256,12 +280,15 @@ class DatabaseCluster(Resource):
     """
     This holds the type of resource.
     """
+
     def __init__(self, data=None):
         super().__init__(DatabaseCluster)
         if data is not None:
             self._update({self._single: data})
+
     def __repr__(self):
         return f"<Database name: {self.name}>"
+
     @classmethod
     def list(cls, **kwargs):
         """
@@ -281,6 +308,7 @@ class DatabaseCluster(Resource):
         """
         databases = super().list(**kwargs)
         return [cls(x) for x in databases]
+
     def waitReady(self):
         """
         Wait untill the cluster is online, this method
@@ -291,6 +319,7 @@ class DatabaseCluster(Resource):
                 break
             self.load()
             time.sleep(self.ttl)
+
     def resize(self, size, num_nodes):
         """
         Change the size of the database cluster.
@@ -312,6 +341,7 @@ class DatabaseCluster(Resource):
             "num_nodes": num_nodes
         }
         return self.put(url=url, data=data)
+
     def migrate(self, region):
         """
         Migrate the database cluster to a new region.
@@ -332,6 +362,7 @@ class DatabaseCluster(Resource):
             "region": region
         }
         return self.put(url=url, data=data)
+
     def createReplica(self):
         """
         Create a new read only replica.
@@ -344,7 +375,9 @@ class DatabaseCluster(Resource):
             private_network_uuid (str): A string specifying the UUID of the VPC to which the read-only replica will be assigned. If excluded, the replica will be assigned to your account's default VPC for the region.
         """
         if self.engine == "redis":
-            raise ClientError("Cannot create read only replicas for 'redis' clusters")
+            raise ClientError(
+                "Cannot create read only replicas for 'redis' clusters")
+
     def getReplica(self, name):
         """
         Return a read only replica by its name.
@@ -362,9 +395,11 @@ class DatabaseCluster(Resource):
             ResourceNotFoundError : This is raised when the status code is 404
         """
         if self.engine == "redis":
-            raise ClientError("Cannot get read only replicas for 'redis' clusters")
+            raise ClientError(
+                "Cannot get read only replicas for 'redis' clusters")
         url = f"{self._url}/{self.id}/replicas/{name}"
         return self.get(url=url)["replica"]
+
     def listReplicas(self):
         """
         Return a list of all read only replicas.
@@ -380,9 +415,11 @@ class DatabaseCluster(Resource):
             ResourceNotFoundError : This is raised when the status code is 404
         """
         if self.engine == "redis":
-            raise ClientError("Cannot list read only replicas for 'redis' clusters")
+            raise ClientError(
+                "Cannot list read only replicas for 'redis' clusters")
         url = f"{self._url}/{self.id}/replicas"
         return self.get(url=url)["replicas"]
+
     def deleteReplica(self, name):
         """
         Delete a read only replica by its name.
@@ -398,9 +435,11 @@ class DatabaseCluster(Resource):
             ClientForbiddenError : This is raised when the status code is 403
         """
         if self.engine == "redis":
-            raise ClientError("Cannot delete read only replicas for 'redis' clusters")
+            raise ClientError(
+                "Cannot delete read only replicas for 'redis' clusters")
         url = f"{self._url}/{self.id}/replicas/{name}"
         return self.delete(url=url)
+
     def updateFirewall(self, rules):
         """
         Add a new firewall rule to the database cluster.
@@ -428,6 +467,7 @@ class DatabaseCluster(Resource):
             })
         url = f"{self._url}/{self.id}/firewall"
         return self.put(url=url, data={"rules": data})
+
     def listFirewall(self):
         """
         Return a list of all Firewall rules for the cluster.
@@ -443,6 +483,7 @@ class DatabaseCluster(Resource):
         url = f"{self._url}/{self.id}/firewall"
         fws = self.get(url=url)["rules"]
         return [DatabaseFirewall(x) for x in fws]
+
     def setMaintenanceWindow(self, day, hour):
         """
         Set the maintenance window for the database cluster.
@@ -467,6 +508,7 @@ class DatabaseCluster(Resource):
             "hour": hour
         }
         return self.put(url=url, data=data)
+
     def listBackups(self):
         """
         List database backups for the cluster.
@@ -489,7 +531,8 @@ class DatabaseCluster(Resource):
         url = f"{self._url}/{self.id}/backups"
         backups = self.get(url=url)
         return [DatabaseBackup(**backup) for backup in backups["backups"]]
-    def replicate(self, name, size, region=None, tags=[], private_network_uuid = None):
+
+    def replicate(self, name, size, region=None, tags=[], private_network_uuid=None):
         """
         Replicate the current database cluster to another one, with a different
         name and size.
@@ -512,7 +555,8 @@ class DatabaseCluster(Resource):
             ResourceNotFoundError : This is raised when the status code is 404
         """
         if self.engine == "redis":
-            raise ClientError("Cannot create read only replicas for 'redis' clusters")
+            raise ClientError(
+                "Cannot create read only replicas for 'redis' clusters")
         url = f"{self._url}/{self.id}/replicas"
         if region is None:
             region = self.region
@@ -524,6 +568,7 @@ class DatabaseCluster(Resource):
             "private_network_uuid": private_network_uuid
         }
         return self.post(url=url, data=data)
+
     def addUser(self, name, auth_plugin="caching_sha2_password"):
         """
         Add a new user to the database cluster.
@@ -542,7 +587,8 @@ class DatabaseCluster(Resource):
         if self.engine == "redis":
             raise ClientError("Cannot create users for redis cluster")
         if auth_plugin not in ["caching_sha2_password", "mysql_native_password"]:
-            raise ClientError("Only 'caching_sha2_password' and 'mysql_native_password' authentication plugins are supported")
+            raise ClientError(
+                "Only 'caching_sha2_password' and 'mysql_native_password' authentication plugins are supported")
         mysql_settings = {
             "auth_plugin": auth_plugin
         }
@@ -552,6 +598,7 @@ class DatabaseCluster(Resource):
             "mysql_settings": mysql_settings
         }
         return self.post(url=f"{self._url}/{self.id}/users", data=data)
+
     def getUser(self, name):
         """
         Retrieve information for the database user by name.
@@ -570,6 +617,7 @@ class DatabaseCluster(Resource):
             raise ClientError("Cannot get users for redis cluster")
         self.waitReady()
         return DatabaseUser(self.get(f"{self._url}/{self.id}/users/{name}")["user"])
+
     def resetAuth(self, name, auth_plugin):
         """
         Change authentication plugin for the database user.
@@ -589,11 +637,14 @@ class DatabaseCluster(Resource):
         """
         if self.engine == "mysql":
             if not auth_plugin in ["caching_sha2_password", "mysql_native_password"]:
-                raise ClientError("Only 'mysql_native_password' and 'caching_sha2_password' authentication is supported")
+                raise ClientError(
+                    "Only 'mysql_native_password' and 'caching_sha2_password' authentication is supported")
             url = f"{self._url}/{self.id}/users/{name}/reset_auth"
             return self.post(url=url, data={"mysql_settings": {"auth_plugin": auth_plugin}})
         else:
-            raise ClientError("Cannot reset auth for 'PostgreSQL' or 'redis' clusters")
+            raise ClientError(
+                "Cannot reset auth for 'PostgreSQL' or 'redis' clusters")
+
     def listUsers(self):
         """
         List all database cluster users.
@@ -611,6 +662,7 @@ class DatabaseCluster(Resource):
         url = f"{self._url}/{self.id}/users"
         users = self.get(url)
         return [DatabaseUser(user) for user in users["users"]]
+
     def deleteUser(self, name):
         """
         Delete a database user by name.
@@ -628,6 +680,7 @@ class DatabaseCluster(Resource):
             raise ClientError("Cannot delete users for 'redis' cluster")
         url = f"{self._url}/{self.id}/users/{name}"
         return self.delete(url=url)
+
     def addDB(self, name):
         """
         Create a new Database in the cluster.
@@ -643,9 +696,11 @@ class DatabaseCluster(Resource):
             ResourceNotFoundError : This is raised when the status code is 404
         """
         if self.engine == "redis":
-            raise ClientError("Database management is not supported for 'redis' clusters")
+            raise ClientError(
+                "Database management is not supported for 'redis' clusters")
         url = f"{self._url}/{self.id}/dbs"
         return self.post(url, {"name": name})
+
     def getDB(self, name):
         """
         Retrieve the database from the cluster.
@@ -661,9 +716,11 @@ class DatabaseCluster(Resource):
             ResourceNotFoundError : This is raised when the status code is 404
         """
         if self.engine == "redis":
-            raise ClientError("Database management is not supported for 'redis' clusters")
+            raise ClientError(
+                "Database management is not supported for 'redis' clusters")
         url = f"{self._url}/{self.id}/dbs/{name}"
         return self.get(url)
+
     def listDBS(self):
         """
         List all databases in the cluster.
@@ -677,10 +734,12 @@ class DatabaseCluster(Resource):
             ResourceNotFoundError : This is raised when the status code is 404
         """
         if self.engine == "redis":
-            raise ClientError("Database management is not supported for 'redis' clusters")
+            raise ClientError(
+                "Database management is not supported for 'redis' clusters")
         url = f"{self._url}/{self.id}/dbs"
         dbs = self.get(url)
         return [db for db in dbs["dbs"]]
+
     def deleteDB(self, name):
         """
         Delete a database from the cluster.
@@ -695,9 +754,11 @@ class DatabaseCluster(Resource):
             ClientForbiddenError : This is raised when the status code is 403
         """
         if self.engine == "redis":
-            raise ClientError("Database management is not supported for 'redis' clusters")
+            raise ClientError(
+                "Database management is not supported for 'redis' clusters")
         url = f"{self._url}/{self.id}/dbs/{name}"
         return self.delete(url=url)
+
     def addPool(self, **kwargs):
         """
         Add a new connection pool to the database cluster if its type is PostgreSQL
@@ -706,13 +767,15 @@ class DatabaseCluster(Resource):
         a :class:`~dopyapi.databases.DatabaseConnectionPool` object.
         """
         if self.engine != "pg":
-            raise ClientError("Only PostgreSQL clusters support creating connection pools")
+            raise ClientError(
+                "Only PostgreSQL clusters support creating connection pools")
         pool = kwargs.get("pool", None)
         if pool is None:
             pool = DatabaseConnectionPool(**kwargs)
         url = f"{self._url}/{self.id}/pools"
         r = self.post(url=url, data=pool.json())
         return DatabaseConnectionPool(**r["pool"])
+
     def listPools(self):
         """
         List all connection pools in the cluster.
@@ -726,10 +789,12 @@ class DatabaseCluster(Resource):
             ResourceNotFoundError : This is raised when the status code is 404
         """
         if self.engine != "pg":
-            raise ClientError("Listing pools is only available for 'PostgreSQL' clusters")
+            raise ClientError(
+                "Listing pools is only available for 'PostgreSQL' clusters")
         url = f"{self._url}/{self.id}/pools"
         pools = self.get(url)
         return [DatabaseConnectionPool(**pool) for pool in pools["pools"]]
+
     def getPool(self, name):
         """
         Retrieve a connection pool from the cluster.
@@ -745,9 +810,11 @@ class DatabaseCluster(Resource):
             ResourceNotFoundError : This is raised when the status code is 404
         """
         if self.engine != "pg":
-            raise ClientError("Connection Pool management is only available for 'PostgreSQL' clusters")
+            raise ClientError(
+                "Connection Pool management is only available for 'PostgreSQL' clusters")
         url = f"{self._url}/{self.id}/pools/{name}"
         return DatabaseConnectionPool(**self.get(url)["pool"])
+
     def deletePool(self, name):
         """
         Delete a Connection Pool from the cluster.
@@ -762,9 +829,11 @@ class DatabaseCluster(Resource):
             ClientForbiddenError : This is raised when the status code is 403
         """
         if self.engine != "pg":
-            raise ClientError("Connection Pool management is only available for 'PostgreSQL' clusters")
+            raise ClientError(
+                "Connection Pool management is only available for 'PostgreSQL' clusters")
         url = f"{self._url}/{self.id}/pools/{name}"
         return self.delete(url=url)
+
     def getEvPolicy(self):
         """
         Retrieve the configured eviction policy for an existing Redis cluster.
@@ -778,9 +847,11 @@ class DatabaseCluster(Resource):
             ResourceNotFoundError : This is raised when the status code is 404
         """
         if self.engine != "redis":
-            raise ClientError("Eviction Policy can only be used with redis clusters")
+            raise ClientError(
+                "Eviction Policy can only be used with redis clusters")
         url = f"{self._url}/{self.id}/eviction_policy"
         return self.get(url=url)["eviction_policy"]
+
     def setEvPolicy(self, policy):
         """
         Set the eviction policy for redis clusters
@@ -797,9 +868,11 @@ class DatabaseCluster(Resource):
 
         """
         if self.engine != "redis":
-            raise ClientError("Eviction Policy can only be used with redis clusters")
+            raise ClientError(
+                "Eviction Policy can only be used with redis clusters")
         url = f"{self._url}/{self.id}/eviction_policy"
         return self.put(url=url, data={"eviction_policy": policy})
+
     def getSqlMode(self):
         """
         Retrieve the configured SQL mode for mysql cluster.
@@ -816,7 +889,8 @@ class DatabaseCluster(Resource):
             raise ClientError("SQL Mode can only be used with mysql clusters")
         url = f"{self._url}/{self.id}/sql_mode"
         return self.get(url=url)["sql_mode"]
-    def setSqlMode(self, mode = "ANSI,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION,NO_ZERO_DATE,NO_ZERO_IN_DATE,STRICT_ALL_TABLES"):
+
+    def setSqlMode(self, mode="ANSI,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION,NO_ZERO_DATE,NO_ZERO_IN_DATE,STRICT_ALL_TABLES"):
         """
         Set SQL Mode for mysql clusters
 

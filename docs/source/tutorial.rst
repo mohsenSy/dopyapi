@@ -346,8 +346,8 @@ To create a new domain use this code::
 As usual, you can list domains with this code::
 
   domains = do.Domain.list()
-    for domain in domains:
-        print(domain)
+  for domain in domains:
+    print(domain)
 
 Each domain consists of domain records, these are represented as instances
 of class :class:`~dopyapi.domains.DomainRecord`.
@@ -355,8 +355,8 @@ of class :class:`~dopyapi.domains.DomainRecord`.
 To get the records of a domain use this code::
 
   domain_records = do.DomainRecord.list("example.dev")
-    for record in domain_records:
-        print(record.json())
+  for record in domain_records:
+    print(record.json())
 
 Or you can use the domain's object directly to list its records
 as follows::
@@ -581,3 +581,77 @@ You can get and set the eviction policy using this code::
   print(policy)
 
 Allowed values for eviction policy are ``noeviction``, ``allkeys_lru``, ``allkeys_random``, ``volatile_lru``, ``volatile_random`` and ``volatile_ttl``.
+
+Create, update and delete kubernetes clusters
+----------------------------------------------
+
+You can use :class:`~dopyapi.doks.DOKS` class to manage kubernetes
+clusters in Digital Ocean.
+
+Use this code to create a new cluster::
+
+  cluster = do.DOKS()
+  node_pool = do.NodePool("front-end", "s-1vcpu-2gb", 3)
+  cluster_data = {
+      "name": "doks-test",
+      "region": "ams3",
+      "version": "1.18",
+      "node_pools": [node_pool]
+  }
+  cluster.create(**cluster_data)
+
+First we create a new instance of :class:`~dopyapi.doks.DOKS` and also
+prepare a Node Pool using :class:`~dopyapi.doks.NodePool`, we set the name
+for the node pool, its size and the number of nodes in it.
+
+After that we prepare the attributes required to create the cluster, these are:
+
+* name: A human readable name for the cluster.
+
+* region: The region where the cluster is created.
+
+* version: The version of kubernetes to be used.
+
+* node_pools: A list of :class:`~dopyapi.doks.NodePool` objects, to be
+  created with the cluster.
+
+We can list clusters using this code::
+
+  dokss = do.DOKS.list()
+  for doks in dokss:
+  print(doks.json())
+
+We can also update the cluster easily, by updating its dynamic
+attributes and then calling :meth:`~dopyapi.resource.Resource.save`::
+
+  doks.name = "new-cluster-name"
+  doks.save()
+
+To delete the cluster use this code::
+
+  cluster.delete()
+
+Manage Node Pools for Kubernetes Cluster
+-----------------------------------------
+
+We can use :class:`~dopyapi.doks.DOKS`, :class:`~dopyapi.doks.Node`
+and :class:`~dopyapi.doks.NodePool` to list, add, update and delete
+nodes and node pools for kubernetes clusters.
+
+The following code lists all node pools for the cluster::
+
+  node_pools = cluster.listNodePools()
+  for node_pool in node_pools:
+    print(node_pool.getJSON())
+
+To get a node pool by ID use :meth:`~dopyapi.doks.DOKS.getNodePool`
+method, by passing the id value to it, it returns :class:`~dopyapi.doks.NodePool`
+instance.
+
+Add a new node pool with this code::
+
+  cluster.addNodePool("s-1vcpu-2gb", "new-pool", 3)
+
+Delete a node pool with this code::
+
+  cluster.deleteNodePool(node_pool_id)

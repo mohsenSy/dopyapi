@@ -2,6 +2,7 @@
 from json import JSONEncoder
 from datetime import datetime
 
+
 def _create_object(name, data):
     """
     Create an object from the returned value in response
@@ -34,12 +35,14 @@ def _create_object(name, data):
     if name == "inbound_rules":
         from .firewalls import InboundRule
         for index in range(len(data)):
-            data[index] = InboundRule(data[index]["protocol"], data[index]["ports"], data[index]["sources"])
+            data[index] = InboundRule(
+                data[index]["protocol"], data[index]["ports"], data[index]["sources"])
     if name == "outbound_rules":
         from .firewalls import OutboundRule
         for index in range(len(data)):
-            data[index] = OutboundRule(data[index]["protocol"], data[index]["ports"], data[index]["destinations"])
-    if (name.endswith("_at") or name.startswith("start") or name.startswith("end") or name == "not_after") and data is not None:
+            data[index] = OutboundRule(
+                data[index]["protocol"], data[index]["ports"], data[index]["destinations"])
+    if (name.endswith("_at") or name.startswith("start") or name.startswith("end_") or name == "not_after") and data is not None:
         import datetime
         index = data.find(".")
         if index != -1:
@@ -47,12 +50,18 @@ def _create_object(name, data):
         return datetime.datetime.strptime(data, "%Y-%m-%dT%H:%M:%SZ")
     if name == "next_backup_window" and isinstance(data, dict):
         import datetime
-        data["start"] = datetime.datetime.strptime(data["start"], "%Y-%m-%dT%H:%M:%SZ")
-        data["end"] = datetime.datetime.strptime(data["end"], "%Y-%m-%dT%H:%M:%SZ")
+        data["start"] = datetime.datetime.strptime(
+            data["start"], "%Y-%m-%dT%H:%M:%SZ")
+        data["end"] = datetime.datetime.strptime(
+            data["end"], "%Y-%m-%dT%H:%M:%SZ")
     if name == "latest_tag":
         from .registry import RepositoryTag
         return RepositoryTag(data["registry_name"], data["repository"], data)
+    if name == "node_pools":
+        from .doks import NodePool
+        return [NodePool(**x) for x in data]
     return data
+
 
 class DOJSONEncoder(JSONEncoder):
     """
@@ -67,6 +76,7 @@ class DOJSONEncoder(JSONEncoder):
 
     Here data is a list that contains objects of Digital Ocean resources.
     """
+
     def __init__(self, *args, **kwargs):
         super(DOJSONEncoder, self).__init__(*args, **kwargs)
 
